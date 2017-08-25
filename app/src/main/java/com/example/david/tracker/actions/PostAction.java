@@ -3,9 +3,7 @@ package com.example.david.tracker.actions;
 import android.util.Log;
 
 import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.HashMap;
 
 import javax.net.ssl.HttpsURLConnection;
 

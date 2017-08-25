@@ -5,9 +5,6 @@ package com.example.david.tracker.store;
  */
 
 
-import android.content.Context;
-import android.content.Intent;
-
 import com.example.david.tracker.EventReducer;
 
 import org.json.JSONObject;
