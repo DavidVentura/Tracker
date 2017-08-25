@@ -11,6 +11,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.util.Log;
 
+import com.example.david.tracker.actions.PostAction;
 import com.example.david.tracker.store.Store;
 
 import java.util.HashMap;
@@ -24,6 +25,8 @@ import static android.content.Context.WIFI_SERVICE;
 public class EventReducer {
     private final static int LOCATION_TIME_THRESHOLD = 30;
     private final static int POST_TIME_THRESHOLD = 30;
+    private static Integer last_loc_tstamp;
+    private static Integer last_post_tstamp;
     public static Context ctx;
 
     public static HashMap<String, Object> reduce(HashMap<String, Object> oldState, HashMap<String, Object> action) {
@@ -33,8 +36,10 @@ public class EventReducer {
         //FIXME: Should reducer be part of the store?
         action.remove("type"); //Clear up the state
         switch (type) {
+            case "ID":
+                newState.put("ID", action.get("ID"));
+                break;
             case "location":
-                Integer last_loc_tstamp = (Integer) newState.get("LAST_LOCATION_UPDATE");
                 // If the data point is the first, it's valid.
                 if (last_loc_tstamp != null) {
                     // If it's not the first, only consider it if the accuracy is better.
@@ -51,21 +56,20 @@ public class EventReducer {
                 // * it's the first data point
                 // * it's the first (valid) data point in LOCATION_TIME_THRESHOLD
                 // * it's a point with better accuracy than the last one
-                newState.put("LAST_LOCATION_UPDATE", tstamp);
+                last_loc_tstamp = tstamp;
                 newState.put("location", action);
                 break;
             case Intent.ACTION_TIME_TICK:
             case Intent.ACTION_TIME_CHANGED:
             case Intent.ACTION_TIMEZONE_CHANGED:
-                Integer last_tstamp = (Integer) newState.get("LAST_POST");
-                if (last_tstamp != null) {
-                    if (tstamp - last_tstamp < POST_TIME_THRESHOLD) {
+                if (last_post_tstamp != null) {
+                    if (tstamp - last_post_tstamp < POST_TIME_THRESHOLD) {
                         break;
                     }
                 }
-                // FIXME : push state every X time
-                newState.put("LAST_POST", tstamp);
-                Log.d("JSON", Store.getJSON());
+
+                PostAction.post(Store.getJSON());
+                last_post_tstamp = tstamp;
                 break;
             case Intent.ACTION_SCREEN_OFF:
                 break;
@@ -80,10 +84,10 @@ public class EventReducer {
                         ssid = ssid.substring(1, ssid.length() - 1);
                     }
                     action.put("SSID", ssid);
-                    action.put("WIFI_Enabled", true);
+                    action.put("ENABLED", true);
                 } else {
                     action.put("SSID", "");
-                    action.put("WIFI_Enabled", false);
+                    action.put("ENABLED", false);
                 }
                 newState.put("wifi", action);
                 break;

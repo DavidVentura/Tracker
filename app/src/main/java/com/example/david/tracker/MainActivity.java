@@ -1,6 +1,7 @@
 package com.example.david.tracker;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -20,16 +21,23 @@ import android.widget.TextView;
 
 import com.example.david.tracker.store.Store;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.UUID;
 import java.util.concurrent.Callable;
+
+import static java.security.AccessController.getContext;
 
 public class MainActivity extends AppCompatActivity {
     private LocationManager locationManager;
     private LocationListener locationListener;
     private TextView textGPS;
+    private TextView textID;
     private TextView textSSID;
+    private String android_id;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,9 +45,18 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         textGPS = (TextView) findViewById(R.id.gps_value);
         textSSID = (TextView) findViewById(R.id.ssid_value);
+        textID = (TextView) findViewById(R.id.id_value);
         EventReducer.ctx = getApplicationContext();
         startService(new Intent(this, MainService.class));
         setupLocation();
+
+        android_id = getUUID();
+
+        HashMap<String, Object> idhm= new HashMap<String, Object>();
+        idhm.put("ID", android_id);
+        idhm.put("type", "ID");
+        Store.dispatch(idhm);
+
         Store.subscribe(new Runnable() {
             @Override
             public void run() {
@@ -48,10 +65,38 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private String getUUID() {
+        final String FILENAME = "UUID_FILE";
+        String uuid;
+
+        try {
+            FileInputStream fis = openFileInput(FILENAME);
+            StringBuffer fileContent = new StringBuffer("");
+            byte[] buffer = new byte[1024];
+            int n;
+            while ((n = fis.read(buffer)) != -1) {
+                fileContent.append(new String(buffer, 0, n));
+            }
+            uuid = fileContent.toString();
+            fis.close();
+        } catch (Exception e) {
+            uuid = UUID.randomUUID().toString();
+            try {
+                FileOutputStream fos = openFileOutput(FILENAME, Context.MODE_PRIVATE);
+                fos.write(uuid.getBytes());
+                fos.close();
+            } catch (Exception e2) {
+                e2.printStackTrace();
+            }
+        }
+        return uuid;
+    }
+
     private void updateUI() {
         HashMap<String, Object> state = Store.getState();
         HashMap<String, Object> location = (HashMap<String, Object>) state.get("location");
         HashMap<String, Object> wifi = (HashMap<String, Object>) state.get("wifi");
+        String id = (String) state.get("ID");
         if (wifi != null) {
             String SSID = wifi.get("SSID") == null ? "" : wifi.get("SSID").toString();
             textSSID.setText(SSID);
@@ -64,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
                     location.get("PROV"));
             textGPS.setText(gps);
         }
+        textID.setText(id);
     }
 
     private void setupLocation() {

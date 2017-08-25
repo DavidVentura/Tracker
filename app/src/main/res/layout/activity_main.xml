@@ -53,5 +53,23 @@
                 android:text="lat:\nlong\nacc\n\prov"
                 android:id="@+id/gps_value" />
         </LinearLayout>
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:text="ID"
+                android:layout_marginRight="10dp"
+                android:id="@+id/id_label"
+                android:textStyle="normal|bold" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="id"
+                android:id="@+id/id_value" />
+        </LinearLayout>
     </LinearLayout>
 </RelativeLayout>
