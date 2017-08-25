@@ -47,6 +47,8 @@ public class Store {
 
     public static String getJSON() {
         JSONObject j = new JSONObject(state);
+        if (j.has("CONFIG"))
+            j.remove("CONFIG");
         return j.toString();
     }
 }

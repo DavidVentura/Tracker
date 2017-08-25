@@ -36,6 +36,9 @@ public class EventReducer {
         //FIXME: Should reducer be part of the store?
         action.remove("type"); //Clear up the state
         switch (type) {
+            case "CONFIG":
+                newState.put(type, action.get(type));
+                break;
             case "ID":
                 newState.put("ID", action.get("ID"));
                 break;

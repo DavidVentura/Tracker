@@ -2,8 +2,11 @@ package com.example.david.tracker.actions;
 
 import android.util.Log;
 
+import com.example.david.tracker.store.Store;
+
 import java.io.OutputStreamWriter;
 import java.net.URL;
+import java.util.HashMap;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -12,15 +15,14 @@ import javax.net.ssl.HttpsURLConnection;
  */
 
 public class PostAction {
-    private static final String ENDPOINT = "https://tracker.davidventura.com.ar/";
-
     public static void post(final String data) {
+
         Thread t = new Thread() {
             @Override
             public void run() {
                 try {
                     Log.d("HTTP-DATA", data);
-
+                    String ENDPOINT = (String)(((HashMap<String, Object>)Store.get("CONFIG")).get("ENDPOINT"));
                     HttpsURLConnection conn = (HttpsURLConnection) new URL(ENDPOINT).openConnection();
                     //HttpURLConnection conn = (HttpURLConnection) new URL(ENDPOINT).openConnection();
                     conn.setRequestMethod("POST");

@@ -28,25 +28,22 @@ public class MainActivity extends AppCompatActivity {
     private TextView textGPS;
     private TextView textID;
     private TextView textSSID;
-    private String android_id;
+    private TextView textEndpoint;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        setupDevice();
+
         textGPS = (TextView) findViewById(R.id.gps_value);
         textSSID = (TextView) findViewById(R.id.ssid_value);
         textID = (TextView) findViewById(R.id.id_value);
+        textEndpoint = (TextView) findViewById(R.id.endpoint_value);
         EventReducer.ctx = getApplicationContext();
         startService(new Intent(this, MainService.class));
         setupLocation();
-
-        android_id = getUUID();
-
-        HashMap<String, Object> idhm= new HashMap<String, Object>();
-        idhm.put("ID", android_id);
-        idhm.put("type", "ID");
-        Store.dispatch(idhm);
 
         Store.subscribe(new Runnable() {
             @Override
@@ -54,6 +51,24 @@ public class MainActivity extends AppCompatActivity {
                 updateUI();
             }
         });
+    }
+
+    private void setupDevice() {
+        String android_id = getUUID();
+
+        HashMap<String, Object> config_a = new HashMap<String, Object>();
+        HashMap<String, Object> config = new HashMap<String, Object>();
+
+        config.put("ENDPOINT", "https://tracker.davidventura.com.ar/");
+
+        config_a.put("CONFIG", config);
+        config_a.put("type", "CONFIG");
+        Store.dispatch(config_a);
+
+        HashMap<String, Object> idhm= new HashMap<String, Object>();
+        idhm.put("ID", android_id);
+        idhm.put("type", "ID");
+        Store.dispatch(idhm);
     }
 
     private String getUUID() {
@@ -87,6 +102,8 @@ public class MainActivity extends AppCompatActivity {
         HashMap<String, Object> state = Store.getState();
         HashMap<String, Object> location = (HashMap<String, Object>) state.get("location");
         HashMap<String, Object> wifi = (HashMap<String, Object>) state.get("wifi");
+        String ENDPOINT = (String)(((HashMap<String, Object>)state.get("CONFIG")).get("ENDPOINT"));
+
         String id = (String) state.get("ID");
         if (wifi != null) {
             String SSID = wifi.get("SSID") == null ? "" : wifi.get("SSID").toString();
@@ -101,6 +118,7 @@ public class MainActivity extends AppCompatActivity {
             textGPS.setText(gps);
         }
         textID.setText(id);
+        textEndpoint.setText(ENDPOINT);
     }
 
     private void setupLocation() {
