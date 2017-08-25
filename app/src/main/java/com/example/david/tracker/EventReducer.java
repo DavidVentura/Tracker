@@ -23,8 +23,8 @@ import static android.content.Context.WIFI_SERVICE;
  */
 
 public class EventReducer {
-    private final static int LOCATION_TIME_THRESHOLD = 40; // IN SECONDS
-    private final static int POST_TIME_THRESHOLD = 120; // IN SECONDS
+    private final static int LOCATION_TIME_THRESHOLD = 30; // IN SECONDS
+    private final static int POST_TIME_THRESHOLD = 90; // IN SECONDS
     private static Integer last_loc_tstamp;
     private static Integer last_post_tstamp;
     public static Context ctx;
