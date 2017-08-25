@@ -8,6 +8,7 @@ See the server at [Tracker-server](https://github.com/davidventura/tracker-serve
 * Tracks currently connected SSID
 * sets up unique device id (per installation..)
 * no google services
+* disabled back button to avoid accidental closing
 * horrendous java code
 
 ![img](/images/screen.jpg?raw=true)

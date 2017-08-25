@@ -52,7 +52,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
+    @Override
+    public void onBackPressed() {
+    }
     private void setupDevice() {
         String android_id = getUUID();
 
