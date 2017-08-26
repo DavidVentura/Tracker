@@ -24,17 +24,21 @@ import static android.content.Context.WIFI_SERVICE;
 
 public class EventReducer {
     private final static int LOCATION_TIME_THRESHOLD = 30; // IN SECONDS
-    private final static int POST_TIME_THRESHOLD = 90; // IN SECONDS
+    private final static int POST_TIME_THRESHOLD = 85; // IN SECONDS
     private static Integer last_loc_tstamp;
     private static Integer last_post_tstamp;
     public static Context ctx;
 
     public static HashMap<String, Object> reduce(HashMap<String, Object> oldState, HashMap<String, Object> action) {
+        // ctx can be null after the app finishes
         String type = (String) action.get("type");
         int tstamp = (int) (System.currentTimeMillis() / 1000);
         HashMap<String, Object> newState = new HashMap<>(oldState);
         //FIXME: Should reducer be part of the store?
         action.remove("type"); //Clear up the state
+        WifiManager wifiManager = (WifiManager) ctx.getSystemService(WIFI_SERVICE);
+        WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+
         switch (type) {
             case "CONFIG":
                 newState.put(type, action.get(type));
@@ -62,25 +66,16 @@ public class EventReducer {
                 last_loc_tstamp = tstamp;
                 newState.put("location", action);
                 break;
+            // These are only useful to trigger the POST.
+            // We don't need them for state (yet).
             case Intent.ACTION_TIME_TICK:
             case Intent.ACTION_TIME_CHANGED:
             case Intent.ACTION_TIMEZONE_CHANGED:
-                if (last_post_tstamp != null) {
-                    if (tstamp - last_post_tstamp < POST_TIME_THRESHOLD) {
-                        break;
-                    }
-                }
-
-                PostAction.post(Store.getJSON());
-                last_post_tstamp = tstamp;
-                break;
             case Intent.ACTION_SCREEN_OFF:
-                break;
             case Intent.ACTION_SCREEN_ON:
                 break;
             case ConnectivityManager.CONNECTIVITY_ACTION:
-                WifiManager wifiManager = (WifiManager) ctx.getSystemService(WIFI_SERVICE);
-                WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+
                 if (wifiManager.isWifiEnabled()) {
                     String ssid = wifiInfo.getSSID();
                     if (ssid.startsWith("\"") && ssid.endsWith("\"")) {
@@ -98,6 +93,12 @@ public class EventReducer {
                 Log.d("EventReducer", type);
         }
 
+        if (last_post_tstamp != null) {
+            if (tstamp - last_post_tstamp >= POST_TIME_THRESHOLD) {
+                PostAction.post(Store.getJSON());
+                last_post_tstamp = tstamp;
+            }
+        }
         return newState;
     }
 }
